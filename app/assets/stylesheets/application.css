@@ -13,3 +13,24 @@
  *= require_tree .
  *= require_self
  */
+
+div.error {
+  color: red;
+}
+
+div.success {
+  color: green;
+}
+
+div.captioned-image {
+  border: 1px solid grey;
+  margin-bottom: 20px;
+}
+
+div.captioned-image figcaption {
+  text-align: center;
+}
+
+form.captioned-image .field {
+  margin-bottom: 10px;
+}

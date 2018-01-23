@@ -40,3 +40,9 @@ end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+
+gem "shrine"
+gem "shrine-google_cloud_storage", github: "renchap/shrine-google_cloud_storage"
+gem "google-cloud"
+gem "image_processing"
+gem "mini_magick"

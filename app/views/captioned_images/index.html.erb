@@ -1,0 +1,53 @@
+<div style="display: flex; justify-content: center; align-items: center;">
+  <div>
+    <h1>Captioned Image Uploader v1.0</h1>
+    <% if flash[:success] %>
+      <div class="success"><%= flash[:success] %></div>
+    <% end %>
+    <% if flash[:error] %>
+      <div class="error"><%= flash[:error] %></div>
+    <% end %>
+    <h2>Upload a new image</h2>
+    <%= form_for @image, class: "captioned-image" do |f| %>
+      <% if @image.errors.any? %>
+        <div id="error_explanation">
+          <h2>
+            <%= pluralize(@image.errors.count, "error") %> prohibited
+            this image from being saved:
+          </h2>
+          <ul>
+            <% @image.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <fieldset>
+        <legend>Captioned image</legend>
+        <div class="field">
+          <%= f.label :image %>
+          <%= f.file_field 'image', :accept => 'image/png,image/gif,image/jpeg', :multiple => false %>
+        </div>
+        <div class="field">
+          <%= f.label :caption %>
+          <%= f.text_area :caption, rows: 3, cols: 50 %>
+        </div>
+        <div>
+          <%= f.submit "Submit" %>
+        </div>
+      </fieldset>
+    <% end %>
+    <h2>Latest uploaded images</h2>
+    <%- if @captioned_images.present? %>
+      <%- @captioned_images.each do |c| %>
+      <div class="captioned-image">
+        <img src="<%= c.image_url(:square) %>" width="500px" height="500px" >
+        <figcaption><%= c.caption %></figcaption>
+      </div>
+      <% end %>
+    <% else %>
+    <p>No images uploaded yet</p>
+    <% end %>
+  </div>
+</div>

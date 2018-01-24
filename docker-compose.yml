@@ -1,0 +1,8 @@
+web:
+  image: gke_demo:latest
+  links:
+   - postgres
+postgres:
+  image: postgres:9.6-alpine
+  ports:
+    - "5432"

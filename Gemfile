@@ -46,3 +46,7 @@ gem "shrine-google_cloud_storage", github: "renchap/shrine-google_cloud_storage"
 gem "google-cloud"
 gem "image_processing"
 gem "mini_magick"
+group :development, :test do
+  gem "dotenv-rails", require: "dotenv/rails-now"
+end
+gem "envied"

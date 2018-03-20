@@ -6,7 +6,8 @@ steps:
     - |
       docker pull us.gcr.io/$PROJECT_ID/gke_demo:latest || true
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '--cache-from', 'us.gcr.io/$PROJECT_ID/gke_demo:latest', '-t', 'us.gcr.io/$PROJECT_ID/gke_demo:latest', '.' ]
+  args: ['build', '--cache-from', 'us.gcr.io/$PROJECT_ID/gke_demo:latest', '-t', 'us.gcr.io/$PROJECT_ID/gke_demo:latest', '-t', 'us.gcr.io/$PROJECT_ID/gke_demo:$COMMIT_SHA', '.' ]
 images:
 - 'us.gcr.io/$PROJECT_ID/gke_demo:latest'
+- 'us.gcr.io/$PROJECT_ID/gke_demo:$COMMIT_SHA'
 timeout: 3600s

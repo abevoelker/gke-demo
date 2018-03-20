@@ -16,7 +16,6 @@ RUN set -x &&\
   python-setuptools \
   software-properties-common \
   python-pip \
-  software-properties-common \
   git \
   libjemalloc-dev \
   brotli &&\
@@ -72,7 +71,6 @@ RUN set -x &&\
 # Add 'web' user which will run the application
 RUN adduser web --home /home/web --shell /bin/bash --disabled-password --gecos ""
 
-# Separate Gemfile ADD so that `bundle install` can be cached more effectively
 COPY Gemfile* /var/www/
 RUN \
   mkdir -p /var/www/docker &&\
@@ -90,12 +88,10 @@ RUN cd /var/www &&\
   . /var/www/docker/ruby-path.sh &&\
   bundle install --path /var/bundle --deployment --without development test deploy
 
-# Add application source and save git revision
+# Add application source
 USER root
 COPY . /var/www
 RUN cd /var/www/ &&\
-  git rev-parse --verify HEAD > /var/www/.git-revision &&\
-  rm -rf /var/www/.git &&\
   find /var/www/docker -type f -name "*.sh" -print0 | xargs -0 chmod +x &&\
   chown -R web:web /var/www
 

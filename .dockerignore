@@ -1,3 +1,4 @@
+.git
 .bundle
 db/*.sqlite3
 db/*.sqlite3-journal
@@ -7,3 +8,4 @@ coverage
 .vagrant
 public/uploads
 node_modules
+cloudbuild.yaml

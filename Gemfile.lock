@@ -1,4 +1,12 @@
 GIT
+  remote: https://github.com/abevoelker/pulse.git
+  revision: 8c589bcf082791dd4a3575d51af336a560a75032
+  branch: rails-5.1-fix
+  specs:
+    rails-pulse (0.5.1)
+      rails
+
+GIT
   remote: https://github.com/renchap/shrine-google_cloud_storage.git
   revision: a62a8b2f14c479115ee73a1c985008bbe0159536
   specs:
@@ -345,6 +353,7 @@ DEPENDENCIES
   pg (~> 0.18)
   puma (~> 3.7)
   rails (~> 5.1.4)
+  rails-pulse!
   sass-rails (~> 5.0)
   shrine
   shrine-google_cloud_storage!

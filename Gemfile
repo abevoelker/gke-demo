@@ -50,3 +50,6 @@ group :development, :test do
   gem "dotenv-rails", require: "dotenv/rails-now"
 end
 gem "envied"
+
+# Health checks
+gem "rails-pulse", github: "abevoelker/pulse", branch: "rails-5.1-fix"

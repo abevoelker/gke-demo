@@ -1,3 +1,4 @@
 group :production do
   variable :IMAGE_STORAGE_BUCKET_NAME, :string
+  variable :ASSETS_URL, :string
 end

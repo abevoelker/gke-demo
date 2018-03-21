@@ -1,4 +1,3 @@
-variable :DATABASE_URL, :string
 group :production do
   variable :IMAGE_STORAGE_BUCKET_NAME, :string
 end

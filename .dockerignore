@@ -9,3 +9,4 @@ coverage
 public/uploads
 node_modules
 cloudbuild.yaml
+docker-compose.yml

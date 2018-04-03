@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: captioned-images-web
+  name: captioned-images-web
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    run: captioned-images-web
+  sessionAffinity: None
+  type: NodePort

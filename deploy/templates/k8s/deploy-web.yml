@@ -1,0 +1,112 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: captioned-images-web
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      run: captioned-images-web
+  template:
+    metadata:
+      labels:
+        run: captioned-images-web
+    spec:
+      containers:
+      - name: captioned-images-web
+        image: us.gcr.io/${PROJECT_ID}/gke_demo:${COMMIT_SHA}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: shared-assets
+          mountPath: /data/public
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-db-credentials
+              key: username
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-db-credentials
+              key: password
+        - name: DB_HOST
+          value: localhost
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_DBNAME
+          value: "captioned_images"
+        - name: IMAGE_STORAGE_BUCKET_NAME
+          value: "${BUCKET_NAME}"
+        - name: ASSETS_URL
+          value: "http://${DNS_ASSETS}"
+        - name: RAILS_LOG_TO_STDOUT
+          value: "true"
+        - name: SECRET_KEY_BASE
+          value: "88d24294e8de572f8526f0f0fcc51c0a857b58aee01182303c8bed8fae8646831a350f323e1d090c43055e6466275500006bc312ea0ab287cc0cb611619666fb"
+        - name: PUMA_BIND
+          value: "tcp://localhost:3000"
+        - name: GOOGLE_CLOUD_KEYFILE_JSON
+          valueFrom:
+            secretKeyRef:
+              name: app-user-credentials
+              key: keyfile
+      - name: cloudsql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+                  "-instances=${CONNECTION_NAME}=tcp:3306",
+                  "-credential_file=/secrets/cloudsql/credentials.json"]
+        volumeMounts:
+          - name: cloudsql-instance-credentials
+            mountPath: /secrets/cloudsql
+            readOnly: true
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+          - name: cloudsql
+            mountPath: /cloudsql
+      - name: nginx
+        image: abevoelker/docker-nginx-alpine-brotli:mainline
+        imagePullPolicy: Always
+        args: ["nginx", "-c", "/etc/nginx/nginx.conf"]
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-conf
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: nginx-confd
+          mountPath: /etc/nginx/conf.d
+        - name: shared-assets
+          mountPath: /var/www/public
+        readinessProbe:
+          httpGet:
+            path: /pulse
+            port: 80
+          periodSeconds: 3
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 10
+      volumes:
+      - name: cloudsql-instance-credentials
+        secret:
+          secretName: cloudsql-instance-credentials
+      - name: cloudsql
+        emptyDir:
+      - name: ssl-certs
+        hostPath:
+          path: /etc/ssl/certs
+      - name: nginx-conf
+        configMap:
+          name: nginx-conf
+      - name: nginx-confd
+        configMap:
+          name: nginx-confd
+      - name: shared-assets
+        emptyDir: {}

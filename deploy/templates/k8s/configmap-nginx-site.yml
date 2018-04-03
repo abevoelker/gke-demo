@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-confd
+data:
+  # Adding new entries here will make them appear as files in the deployment.
+  captioned_images.conf: |
+    upstream rails {
+      server localhost:3000 fail_timeout=0;
+    }
+
+    gzip_proxied any; # do not disable gzip when passing through proxy
+    gzip_vary on;
+
+    server {
+      listen 80;
+      server_name ${DNS_ASSETS};
+
+      # path for static files
+      root /var/www/public;
+
+      error_page 402             /402.html;
+      error_page 404             /404.html;
+      error_page 500 502 503 504 /50x.html;
+
+      # for more info on these settings, see:
+      # http://guides.rubyonrails.org/asset_pipeline.html#far-future-expires-header
+      # http://guides.rubyonrails.org/asset_pipeline.html#gzip-compression
+      location ~ ^/(assets|packs)/ {
+        add_header Cache-Control public,max-age=31536000;
+        add_header ETag "";
+        # CORS config from http://enable-cors.org/server_nginx.html
+        add_header 'Access-Control-Allow-Origin' 'http://${DNS_WEBSITE}';
+        add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS';
+        add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+        brotli_static on;
+        gzip_static on;
+        break;
+      }
+
+      # Wide-open CORS config from http://enable-cors.org/server_nginx.html
+      location / {
+        if ($request_method = 'OPTIONS') {
+          add_header 'Access-Control-Allow-Origin' 'http://${DNS_WEBSITE}';
+          add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS';
+          #
+          # Custom headers and headers various browsers *should* be OK with but aren't
+          #
+          add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+          #
+          # Tell client that this pre-flight info is valid for 20 days
+          #
+          add_header 'Access-Control-Max-Age' 1728000;
+          add_header 'Content-Type' 'text/plain charset=UTF-8';
+          add_header 'Content-Length' 0;
+          return 204;
+        }
+        if ($request_method = 'GET') {
+          add_header 'Access-Control-Allow-Origin' 'http://${DNS_WEBSITE}';
+          add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS';
+          add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+        }
+      }
+    }
+
+    server {
+      listen 80;
+      server_name ${DNS_WEBSITE};
+
+      # path for static files
+      root /var/www/public;
+
+      error_page 402             /402.html;
+      error_page 404             /404.html;
+      error_page 500 502 503 504 /50x.html;
+
+      location ~ ^/(assets|packs)/ {
+        return 404;
+      }
+
+      location / {
+        # an HTTP header important enough to have its own Wikipedia entry:
+        #   http://en.wikipedia.org/wiki/X-Forwarded-For
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        # enable this if and only if you use HTTPS, this helps Rack
+        # set the proper protocol for doing redirects:
+        # proxy_set_header X-Forwarded-Proto https;
+        # proxy_set_header X-Forwarded-Proto $scheme;
+
+        # pass the Host: header from the client right along so redirects
+        # can be set properly within the Rack application
+        proxy_set_header Host $http_host;
+
+        # we don't want nginx trying to do something clever with
+        # redirects, we set the Host: header above already.
+        proxy_redirect off;
+
+        # set "proxy_buffering off" *only* for Rainbows! when doing
+        # Comet/long-poll stuff.  It's also safe to set if you're
+        # using only serving fast clients with Unicorn + nginx.
+        # Otherwise you _want_ nginx to buffer responses to slow
+        # clients, really.
+        # proxy_buffering off;
+
+        client_max_body_size 5242880;
+
+        # Try to serve static files from nginx, no point in making an
+        # *application* server like Unicorn/Rainbows! serve static files.
+        if (!-f $request_filename) {
+          proxy_pass http://rails;
+          break;
+        }
+      }
+    }
+
+    server {
+      listen 80 default_server;
+
+      location /pulse {
+        proxy_redirect off;
+        proxy_pass http://rails;
+        break;
+      }
+
+      location / {
+        rewrite ^ /pulse;
+        proxy_redirect off;
+        proxy_pass http://rails;
+        break;
+      }
+    }

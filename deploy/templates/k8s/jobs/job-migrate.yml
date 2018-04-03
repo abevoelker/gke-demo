@@ -1,0 +1,61 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: captioned-images-db-migrate
+spec:
+  completions: 1
+  template:
+    metadata:
+      name: captioned-images-db-migrate
+    spec:
+      containers:
+      - name: captioned-images-migrate
+        image: us.gcr.io/${PROJECT_ID}/gke_demo:${COMMIT_SHA}
+        imagePullPolicy: Always
+        args: ["bundle", "exec", "rake", "db:create", "db:migrate"]
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-db-credentials
+              key: username
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-db-credentials
+              key: password
+        - name: DB_HOST
+          value: localhost
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_DBNAME
+          value: "captioned_images"
+        - name: IMAGE_STORAGE_BUCKET_NAME
+          value: "${BUCKET_NAME}"
+        - name: ASSETS_URL
+          value: "http://${DNS_ASSETS}"
+        - name: SECRET_KEY_BASE
+          value: "88d24294e8de572f8526f0f0fcc51c0a857b58aee01182303c8bed8fae8646831a350f323e1d090c43055e6466275500006bc312ea0ab287cc0cb611619666fb"
+      - name: cloudsql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+                  "-instances=${CONNECTION_NAME}=tcp:3306",
+                  "-credential_file=/secrets/cloudsql/credentials.json"]
+        volumeMounts:
+          - name: cloudsql-instance-credentials
+            mountPath: /secrets/cloudsql
+            readOnly: true
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+          - name: cloudsql
+            mountPath: /cloudsql
+      volumes:
+      - name: cloudsql-instance-credentials
+        secret:
+          secretName: cloudsql-instance-credentials
+      - name: cloudsql
+        emptyDir:
+      - name: ssl-certs
+        hostPath:
+          path: /etc/ssl/certs
+      restartPolicy: Never

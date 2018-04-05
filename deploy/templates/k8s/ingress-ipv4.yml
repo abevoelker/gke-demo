@@ -5,6 +5,11 @@ metadata:
   annotations:
     kubernetes.io/ingress.global-static-ip-name: captioned-images-ipv4-address
 spec:
+  tls:
+  - secretName: captioned-images-tls
+    hosts:
+    - ${DNS_WEBSITE}
+    - ${DNS_ASSETS}
   rules:
   - host: ${DNS_WEBSITE}
     http:

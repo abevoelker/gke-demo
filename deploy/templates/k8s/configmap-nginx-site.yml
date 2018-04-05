@@ -15,6 +15,10 @@ data:
     server {
       listen 80;
       server_name ${DNS_ASSETS};
+      # force https
+      if ($http_x_forwarded_proto = "http") {
+        return 301 https://$server_name$request_uri;
+      }
 
       # path for static files
       root /var/www/public;
@@ -30,7 +34,7 @@ data:
         add_header Cache-Control public,max-age=31536000;
         add_header ETag "";
         # CORS config from http://enable-cors.org/server_nginx.html
-        add_header 'Access-Control-Allow-Origin' 'http://${DNS_WEBSITE}';
+        add_header 'Access-Control-Allow-Origin' 'https://${DNS_WEBSITE}';
         add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS';
         add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
         brotli_static on;
@@ -41,7 +45,7 @@ data:
       # Wide-open CORS config from http://enable-cors.org/server_nginx.html
       location / {
         if ($request_method = 'OPTIONS') {
-          add_header 'Access-Control-Allow-Origin' 'http://${DNS_WEBSITE}';
+          add_header 'Access-Control-Allow-Origin' 'https://${DNS_WEBSITE}';
           add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS';
           #
           # Custom headers and headers various browsers *should* be OK with but aren't
@@ -66,6 +70,10 @@ data:
     server {
       listen 80;
       server_name ${DNS_WEBSITE};
+      # force https
+      if ($http_x_forwarded_proto = "http") {
+        return 301 https://$server_name$request_uri;
+      }
 
       # path for static files
       root /var/www/public;
@@ -85,7 +93,7 @@ data:
 
         # enable this if and only if you use HTTPS, this helps Rack
         # set the proper protocol for doing redirects:
-        # proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-Proto https;
         # proxy_set_header X-Forwarded-Proto $scheme;
 
         # pass the Host: header from the client right along so redirects

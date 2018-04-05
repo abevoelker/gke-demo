@@ -46,7 +46,7 @@ spec:
         - name: IMAGE_STORAGE_BUCKET_NAME
           value: "${BUCKET_NAME}"
         - name: ASSETS_URL
-          value: "http://${DNS_ASSETS}"
+          value: "https://${DNS_ASSETS}"
         - name: RAILS_LOG_TO_STDOUT
           value: "true"
         - name: SECRET_KEY_BASE

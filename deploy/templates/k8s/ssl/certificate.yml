@@ -1,0 +1,19 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: captioned-images-tls
+  namespace: default
+spec:
+  secretName: captioned-images-tls
+  issuerRef:
+    name: letsencrypt-prod
+  dnsNames:
+  - ${DNS_WEBSITE}
+  - ${DNS_ASSETS}
+  acme:
+    config:
+    - dns01:
+        provider: prod-clouddns
+      domains:
+      - ${DNS_WEBSITE}
+      - ${DNS_ASSETS}

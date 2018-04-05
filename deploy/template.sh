@@ -1,7 +1,9 @@
 #!/bin/bash
 set -u
 
-SUB_VARS='$PROJECT_ID:$BUCKET_NAME:$COMMIT_SHA:$CONNECTION_NAME:$DNS_WEBSITE:$DNS_ASSETS'
+SUB_VARS='$PROJECT_ID:$BUCKET_NAME:$COMMIT_SHA:$CONNECTION_NAME:$DNS_WEBSITE:$DNS_ASSETS:$EMAIL'
+# optional vars
+export EMAIL=${EMAIL:-"example@example.com"}
 
 # check required variables
 for i in $(echo $SUB_VARS | tr ":" "\n")

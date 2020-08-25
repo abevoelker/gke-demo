@@ -28,6 +28,7 @@ MIME_WHITELIST = [
   'text/vcard',
   'text/vnd.rim.location.xloc',
   'text/vtt',
+  'text/x-c',
   'text/x-component',
   'text/x-cross-domain-policy',
 ]
@@ -50,8 +51,8 @@ for root, dirnames, basenames in os.walk(compressdir):
         stinfo = os.stat(full_path)
         if mime_type in MIME_WHITELIST or stinfo.st_size == 0:
             compress_path = "%s.br" % full_path
-            print("compressing %s" % compress_path)
-            subprocess.call(["brotli", "--input", full_path, "--output", compress_path])
+            print("compressing %s" % full_path)
+            subprocess.call(["brotli", "--", full_path])
             # set mtime and atime to uncompressed file's values
             os.utime(compress_path,(stinfo.st_atime, stinfo.st_mtime))
             # set file permissions to uncompressed file's values

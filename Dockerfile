@@ -52,7 +52,7 @@ RUN set -x &&\
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
   yarn \
   libpq-dev \
-  postgresql-client-9.6 \
+  postgresql-client-11 \
   libreadline-dev \
   zlib1g-dev \
   flex \
